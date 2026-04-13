@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="panel">
+    <div class="panel__header">
+      <h3>記録追加</h3>
+    </div>
+    <form class="record-form" method="post" action="{{ url_for('main.create_record_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.create_record_entry') }}">
+      <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span class="field-label">日付</span>
+          <input type="date" name="date" value="{{ form_values.date }}" required>
+          {% if form_errors.date %}<small class="field-error">{{ form_errors.date }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">時刻</span>
+          <input type="time" name="time" value="{{ form_values.time }}" required>
+          {% if form_errors.time %}<small class="field-error">{{ form_errors.time }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">給油量 (L)</span>
+          <input type="number" inputmode="decimal" step="0.01" min="0" name="fuel_l" value="{{ form_values.fuel_l }}" required>
+          {% if form_errors.fuel_l %}<small class="field-error">{{ form_errors.fuel_l }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">価格 (円)</span>
+          <input type="number" inputmode="numeric" step="1" min="0" name="price_yen" value="{{ form_values.price_yen }}" required>
+          {% if form_errors.price_yen %}<small class="field-error">{{ form_errors.price_yen }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">区間距離 (km)</span>
+          <input type="number" inputmode="decimal" step="0.1" min="0" name="trip_km" value="{{ form_values.trip_km }}" placeholder="例: 120.5">
+          {% if form_errors.trip_km %}<small class="field-error">{{ form_errors.trip_km }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">積算距離 (km)</span>
+          <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ form_values.odd_km }}" placeholder="例: 12540.0">
+          {% if form_errors.odd_km %}<small class="field-error">{{ form_errors.odd_km }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">満タン給油</span>
+          <select name="full" required>
+            {% for option in form_options.full %}
+              <option value="{{ option.value }}" {% if option.value == form_values.full %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors.full %}<small class="field-error">{{ form_errors.full }}</small>{% endif %}
+        </label>
+
+        <label class="form-field">
+          <span class="field-label">油種</span>
+          <select name="fuel_type" required>
+            {% for option in form_options.fuel_type %}
+              <option value="{{ option.value }}" {% if option.value == form_values.fuel_type %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors.fuel_type %}<small class="field-error">{{ form_errors.fuel_type }}</small>{% endif %}
+        </label>
+      </div>
+
+      <label class="form-field">
+        <span class="field-label">メモ</span>
+        <textarea name="note" rows="3" placeholder="任意メモ">{{ form_values.note }}</textarea>
+        {% if form_errors.note %}<small class="field-error">{{ form_errors.note }}</small>{% endif %}
+      </label>
+
+      <div class="form-actions">
+        <button class="primary-button" type="submit">記録を追加</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <h3>記録一覧</h3>
+    </div>
+    {% if has_records %}
+      <div class="record-list">
+        <div class="record-list__header" aria-hidden="true">
+          <span>日時</span>
+          <span>距離</span>
+          <span>給油量</span>
+          <span>燃費</span>
+          <span>メモ</span>
+          <span class="record-list__header-action">操作</span>
+        </div>
+        {% for record in record_cards %}
+          <article class="record-card" data-record-id="{{ record.row_id }}">
+            <div class="record-row">
+              <div class="record-row__cell record-row__cell--date">
+                <strong>{{ record.title }}</strong>
+                <span>{{ record.subtitle }}</span>
+              </div>
+              <div class="record-row__metrics">
+                <div class="record-row__cell record-row__cell--distance">
+                  <span class="record-row__mobile-label">距離</span>
+                  <strong>{{ record.meta_items[2].value if record.meta_items[2].value != '--' else record.meta_items[3].value }}</strong>
+                </div>
+                <div class="record-row__cell record-row__cell--fuel">
+                  <span class="record-row__mobile-label">給油量</span>
+                  <strong>{{ record.meta_items[0].value }}</strong>
+                </div>
+                <div class="record-row__cell record-row__cell--economy">
+                  <span class="record-row__mobile-label">燃費</span>
+                  <strong>{{ record.economy_label }}</strong>
+                </div>
+              </div>
+              <div class="record-row__cell record-row__cell--note">
+                <span class="record-row__mobile-label">メモ</span>
+                <strong>{{ record.meta_items[7].value }}</strong>
+              </div>
+              <div class="record-row__action">
+                <form
+                  method="post"
+                  action="{{ url_for('main.delete_record_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.delete_record_entry') }}"
+                  onsubmit="return confirm('この記録を削除しますか？');"
+                >
+                  <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+                  <input type="hidden" name="record_index" value="{{ record.delete_index }}">
+                  <button class="danger-button danger-button--quiet" type="submit" aria-label="削除">×</button>
+                </form>
+              </div>
+            </div>
+            {% if record.meta_items[7].value != 'メモなし' %}
+              <div class="record-row__note-mobile">{{ record.meta_items[7].value }}</div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <strong>表示できる記録がありません。</strong>
+      </div>
+    {% endif %}
+  </section>
+
+  {% if notices %}
+    <section class="panel">
+      <div class="panel__header">
+        <h3>状態</h3>
+      </div>
+      <ul class="notice-list">
+        {% for notice in notices %}
+          <li>{{ notice }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if errors %}
+    <section class="panel panel--error">
+      <div class="panel__header">
+        <h3>警告</h3>
+      </div>
+      <ul class="notice-list">
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{% endblock %}

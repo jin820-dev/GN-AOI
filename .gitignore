@@ -1,0 +1,23 @@
+# Python
+
+**pycache**/
+*.pyc
+
+# Virtual env
+
+.venv/
+
+# Runtime data
+
+instance/
+
+# Dev only
+
+docs/
+tests/
+.codex
+
+# OS
+
+.DS_Store
+

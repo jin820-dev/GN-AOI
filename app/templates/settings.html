@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="panel">
+    <div class="panel__header">
+      <h3>車両追加</h3>
+    </div>
+    <form class="record-form" method="post" action="{{ url_for('main.create_vehicle_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.create_vehicle_entry') }}">
+      <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+      <label class="form-field">
+        <span class="field-label">車両名</span>
+        <input type="text" name="label" maxlength="80" required>
+      </label>
+      <label class="form-field">
+        <span class="field-label">初期ODD距離 (km)</span>
+        <input type="number" inputmode="decimal" step="0.1" min="0" name="initial_odd_km" value="0" placeholder="未入力時は 0">
+      </label>
+      <div class="form-actions">
+        <button class="primary-button" type="submit">追加</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <h3>車両管理</h3>
+    </div>
+    <div class="vehicle-admin-list">
+      {% for vehicle in vehicles %}
+        <div class="vehicle-admin-item">
+          <strong>{{ vehicle.label }}</strong>
+          <form
+            class="vehicle-admin-actions"
+            method="post"
+            action="{{ url_for('main.delete_vehicle_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.delete_vehicle_entry') }}"
+            onsubmit="return confirm('この車両を削除しますか？\\n関連する記録CSVも削除されます。');"
+          >
+            <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+            <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+            <button class="danger-button" type="submit" {% if vehicles|length <= 1 %}disabled{% endif %}>削除</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <h3>記録インポート</h3>
+    </div>
+    <form
+      class="record-form"
+      method="post"
+      enctype="multipart/form-data"
+      action="{{ url_for('main.import_records_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.import_records_entry') }}"
+    >
+      <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+      <p class="support-text">
+        {% if selected_vehicle_id %}
+          選択中の車両「{{ vehicle_label }}」の記録CSVを置き換えます。
+        {% else %}
+          インポートには車両選択が必要です。
+        {% endif %}
+      </p>
+      <label class="form-field">
+        <span class="field-label">CSV ファイル</span>
+        <input type="file" name="csv_file" accept=".csv,text/csv" {% if not selected_vehicle_id %}disabled{% endif %} required>
+      </label>
+      <div class="form-actions">
+        <button class="primary-button" type="submit" {% if not selected_vehicle_id %}disabled{% endif %}>インポート</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <h3>初期化</h3>
+    </div>
+    <form
+      class="record-form"
+      method="post"
+      action="{{ url_for('main.reset_data_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.reset_data_entry') }}"
+      onsubmit="return confirm('全車両と全記録を初期化しますか？\\nこの操作は元に戻せません。');"
+    >
+      <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+      <p class="support-text">instance/vehicles.json と instance/records/*.csv を空の状態に戻します。</p>
+      <div class="form-actions">
+        <button class="danger-button danger-button--wide" type="submit">初期化する</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="settings-stack">
+      <button
+        class="theme-toggle"
+        type="button"
+        data-theme-toggle
+        aria-label="テーマ切替"
+      >
+        Theme
+      </button>
+    </div>
+  </section>
+
+  {% if notices %}
+    <section class="panel">
+      <div class="panel__header">
+        <h3>状態</h3>
+      </div>
+      <ul class="notice-list">
+        {% for notice in notices %}
+          <li>{{ notice }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if errors %}
+    <section class="panel panel--error">
+      <div class="panel__header">
+        <h3>警告</h3>
+      </div>
+      <ul class="notice-list">
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{% endblock %}

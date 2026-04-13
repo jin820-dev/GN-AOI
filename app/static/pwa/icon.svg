@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>GN-AOI</title>
+  <defs>
+    <linearGradient id="g" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#08111f" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#g)" />
+  <path d="M62 143c0-10 7-18 16-18h100c9 0 16 8 16 18v20h-16v-10H78v10H62v-20Zm24-51 20-26h44l20 26h-24l-8-10h-28l-8 10H86Z" fill="#e6fffb"/>
+  <circle cx="94" cy="175" r="12" fill="#e6fffb"/>
+  <circle cx="162" cy="175" r="12" fill="#e6fffb"/>
+</svg>

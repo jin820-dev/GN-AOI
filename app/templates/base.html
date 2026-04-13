@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{ app_name }}{% if page_title %} | {{ page_title }}{% endif %}</title>
+    <meta name="description" content="GN-AOI: Automotive Optimization Interface">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="{{ url_for('static', filename='pwa/manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='pwa/icon.svg') }}" type="image/svg+xml">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar__brand">
+          <p class="eyebrow">Automotive Optimization Interface</p>
+          <h1>{{ app_name }}</h1>
+        </div>
+        <form class="topbar__vehicle-switcher" method="get">
+          <label class="field-label" for="global-vehicle-select">車両</label>
+          <div class="select-wrap">
+            <select id="global-vehicle-select" name="vehicle" onchange="this.form.submit()">
+              {% for vehicle in vehicles %}
+                <option value="{{ vehicle.id }}" {% if vehicle.id == selected_vehicle_id %}selected{% endif %}>
+                  {{ vehicle.label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </header>
+
+      <nav class="bottom-nav" aria-label="Primary">
+        <a class="bottom-nav__item {% if page_key == 'home' %}is-active{% endif %}" href="{{ url_for('main.home', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.home') }}">Home</a>
+        <a class="bottom-nav__item {% if page_key == 'records' %}is-active{% endif %}" href="{{ url_for('main.records', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.records') }}">Records</a>
+        <a class="bottom-nav__item {% if page_key == 'settings' %}is-active{% endif %}" href="{{ url_for('main.settings', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.settings') }}">Settings</a>
+      </nav>
+
+      <main class="page-content">
+        {% with flashes = get_flashed_messages(with_categories=true) %}
+          {% if flashes %}
+            <section class="panel">
+              <div class="flash-list">
+              {% for category, message in flashes %}
+                <div class="flash flash--{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+            </section>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  </body>
+</html>
