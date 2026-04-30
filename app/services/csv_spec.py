@@ -1,0 +1,12 @@
+CSV_HEADER = [
+    "date",
+    "time",
+    "fuel_l",
+    "price_yen",
+    "trip_km",
+    "odd_km",
+    "full",
+    "distance_mode",
+    "fuel_type",
+    "note",
+]

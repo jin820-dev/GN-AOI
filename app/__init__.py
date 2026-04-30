@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import Flask
 
 from app.routes.main import main_bp
+from app.services.csv_spec import CSV_HEADER
 
 
 def create_app(instance_path: str | None = None) -> Flask:
@@ -18,18 +19,7 @@ def create_app(instance_path: str | None = None) -> Flask:
     app.config.from_mapping(
         APP_NAME="GN-AOI",
         DATA_DIR=str(instance_dir),
-        CSV_HEADER=[
-            "date",
-            "time",
-            "fuel_l",
-            "price_yen",
-            "trip_km",
-            "odd_km",
-            "full",
-            "distance_mode",
-            "fuel_type",
-            "note",
-        ],
+        CSV_HEADER=CSV_HEADER,
         SECRET_KEY="gnaoi-dev-secret",
     )
 
