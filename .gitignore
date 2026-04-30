@@ -9,7 +9,11 @@
 
 # Runtime data
 
-instance/
+instance/*
+!instance/.gitkeep
+!instance/records/
+instance/records/*
+!instance/records/.gitkeep
 
 # Dev only
 
@@ -20,4 +24,3 @@ tests/
 # OS
 
 .DS_Store
-

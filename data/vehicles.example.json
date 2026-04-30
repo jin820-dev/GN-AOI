@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sample-car",
+    "label": "Sample Car",
+    "csv_file": "sample-car.csv",
+    "owner": null,
+    "enabled": true,
+    "initial_odd_km": 0.0
+  }
+]

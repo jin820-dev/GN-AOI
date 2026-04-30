@@ -82,6 +82,12 @@ python run.py
 ## 初期設定
 
 本リポジトリには個人データは含まれていません。
+初回起動時に、実データ保存先として以下が自動生成されます。
+
+* instance/vehicles.json
+* instance/records/
+
+instance/vehicles.json は空の車両一覧（[]）として作成されます。
 初回起動後、以下を行ってください。
 
 1. Settings タブを開く
@@ -133,10 +139,28 @@ python run.py
 
 ## データ構造
 
+実データは以下に保存されます。
+
 * 車両情報: instance/vehicles.json
 * 記録データ: instance/records/*.csv
 
 すべてのデータはローカルに保存されます。
+instance/vehicles.json と instance/records/*.csv は Git 管理対象外です。
+
+CSV ヘッダは以下の固定順です。この順序は互換性チェックに使われます。
+
+date,time,fuel_l,price_yen,trip_km,odd_km,full,distance_mode,fuel_type,note
+
+リポジトリには、実データを含めずに構造を確認するためのファイルだけを置いています。
+
+* instance/.gitkeep
+* instance/records/.gitkeep
+* data/vehicles.json
+* data/vehicles.example.json
+* data/records/example.csv
+
+data/ は初期用の空データ置き場およびサンプル確認用です。
+アプリの実行時データとしては参照されず、通常運用では instance/ を使用します。
 
 ---
 
