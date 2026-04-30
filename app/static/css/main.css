@@ -183,6 +183,110 @@ textarea {
   gap: 10px;
 }
 
+.summary-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.summary-groups--desktop {
+  display: none;
+}
+
+.summary-mobile {
+  display: grid;
+  gap: 14px;
+}
+
+.summary-mobile-section {
+  display: grid;
+  gap: 8px;
+}
+
+.summary-mobile-primary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.summary-mobile-metric {
+  min-width: 0;
+  min-height: 76px;
+  padding: 10px 8px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summary-mobile-metric__value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 0;
+  margin-top: 6px;
+  font-size: 1.28rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.summary-mobile-metric__value small {
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.summary-detail-list {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.summary-detail-list__item {
+  min-width: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-detail-list__item:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.summary-detail-list dt {
+  color: var(--text-soft);
+  font-size: 0.72rem;
+}
+
+.summary-detail-list dd {
+  margin: 3px 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.summary-group {
+  display: grid;
+  gap: 10px;
+}
+
+.summary-group__title {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.summary-grid--primary {
+  grid-template-columns: 1fr;
+}
+
 .meta-card,
 .summary-card {
   background: var(--surface-strong);
@@ -204,6 +308,10 @@ textarea {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.summary-card--primary {
+  min-height: 108px;
 }
 
 .summary-vehicle {
@@ -599,6 +707,14 @@ textarea {
 @media (min-width: 720px) {
   .app-shell {
     padding-top: 34px;
+  }
+
+  .summary-mobile {
+    display: none;
+  }
+
+  .summary-groups--desktop {
+    display: grid;
   }
 
   .meta-grid {

@@ -9,12 +9,50 @@
         <strong class="summary-vehicle__value">{{ vehicle_label }}</strong>
       </div>
     </div>
-    <div class="summary-grid">
-      {% for item in summary_items %}
-        <article class="summary-card">
-          <span class="summary-card__label">{{ item.label }}</span>
-          <strong class="summary-card__value">{{ item.value }}</strong>
-        </article>
+    <div class="summary-mobile" aria-label="スマホ用サマリー">
+      <section class="summary-mobile-section">
+        <h4 class="summary-group__title">SUMMARY</h4>
+        <div class="summary-mobile-primary">
+          {% for item in summary_mobile_primary %}
+            <article class="summary-mobile-metric">
+              <span class="summary-card__label">{{ item.label }}</span>
+              <strong class="summary-mobile-metric__value">
+                <span>{{ item.value_main }}</span>
+                {% if item.value_unit %}<small>{{ item.value_unit }}</small>{% endif %}
+              </strong>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="summary-mobile-section">
+        <h4 class="summary-group__title">DETAIL</h4>
+        <dl class="summary-detail-list">
+          {% for item in summary_mobile_details %}
+            <div class="summary-detail-list__item">
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </section>
+    </div>
+
+    <div class="summary-groups summary-groups--desktop">
+      {% for group in summary_groups %}
+        {% if group.metrics %}
+          <section class="summary-group summary-group--{{ group.key }}">
+            <h4 class="summary-group__title">{{ group.label }}</h4>
+            <div class="summary-grid {% if group.key == 'basic' %}summary-grid--primary{% endif %}">
+              {% for item in group.metrics %}
+                <article class="summary-card {% if group.key == 'basic' %}summary-card--primary{% endif %}">
+                  <span class="summary-card__label">{{ item.label }}</span>
+                  <strong class="summary-card__value">{{ item.value }}</strong>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
       {% endfor %}
     </div>
   </section>

@@ -19,6 +19,9 @@ class HomeViewModel:
     vehicles: list[dict[str, str]]
     selected_vehicle_id: str | None
     summary_items: list[dict[str, str]]
+    summary_groups: list[dict]
+    summary_mobile_primary: list[dict[str, str]]
+    summary_mobile_details: list[dict[str, str]]
     record_cards: list[dict]
     notices: list[str]
     errors: list[str]
@@ -26,6 +29,73 @@ class HomeViewModel:
     form_values: dict[str, str]
     form_errors: dict[str, str]
     form_options: dict[str, list[dict[str, str]]]
+
+
+SUMMARY_GROUP_DEFINITIONS = [
+    {"key": "basic", "label": "基本", "metrics": ["総走行距離", "総給油量", "平均燃費"]},
+    {"key": "economy", "label": "燃費", "metrics": ["直近燃費", "最高燃費", "最低燃費"]},
+    {
+        "key": "fuel-cost",
+        "label": "給油・費用",
+        "metrics": ["給油回数", "総給油金額", "平均給油金額", "平均燃料単価", "平均給油量"],
+    },
+    {"key": "vehicle", "label": "車両情報", "metrics": ["初期ODD", "現在ODD", "直近給油日"]},
+]
+
+SUMMARY_MOBILE_PRIMARY_LABELS = ["直近燃費", "平均燃費", "最高燃費"]
+SUMMARY_MOBILE_DETAIL_LABELS = [
+    "総走行距離",
+    "総給油量",
+    "最低燃費",
+    "給油回数",
+    "総給油金額",
+    "平均給油金額",
+    "平均燃料単価",
+    "平均給油量",
+    "初期ODD",
+    "現在ODD",
+    "直近給油日",
+]
+
+
+def _build_summary_groups(summary_items: list[dict[str, str]]) -> list[dict]:
+    items_by_label = {item["label"]: item for item in summary_items}
+    return [
+        {
+            "key": group["key"],
+            "label": group["label"],
+            "metrics": [
+                items_by_label[label]
+                for label in group["metrics"]
+                if label in items_by_label
+            ],
+        }
+        for group in SUMMARY_GROUP_DEFINITIONS
+    ]
+
+
+def _split_value_unit(value: str) -> dict[str, str]:
+    if value == "-":
+        return {"value_main": value, "value_unit": ""}
+
+    main, separator, unit = value.partition(" ")
+    if not separator:
+        return {"value_main": value, "value_unit": ""}
+    return {"value_main": main, "value_unit": unit}
+
+
+def _pick_summary_items(summary_items: list[dict[str, str]], labels: list[str], *, split_value: bool = False) -> list[dict[str, str]]:
+    items_by_label = {item["label"]: item for item in summary_items}
+    picked_items = []
+    for label in labels:
+        item = items_by_label.get(label)
+        if item is None:
+            continue
+        picked_item = dict(item)
+        if split_value:
+            picked_item.update(_split_value_unit(picked_item["value"]))
+        picked_items.append(picked_item)
+    return picked_items
 
 
 def build_home_view_model(
@@ -51,6 +121,14 @@ def build_home_view_model(
         errors.extend(csv_result.errors)
         records = list(reversed(csv_result.records))
 
+    summary_items = [
+        {"label": metric.label, "value": metric.value}
+        for metric in build_summary(
+            records,
+            initial_odd_km=catalog.selected_vehicle.initial_odd_km if catalog.selected_vehicle else 0,
+        )
+    ]
+
     model = HomeViewModel(
         app_name=app_name,
         page_key=page_key,
@@ -63,13 +141,10 @@ def build_home_view_model(
             for vehicle in catalog.vehicles
         ],
         selected_vehicle_id=catalog.selected_vehicle.id if catalog.selected_vehicle else None,
-        summary_items=[
-            {"label": metric.label, "value": metric.value}
-            for metric in build_summary(
-                records,
-                initial_odd_km=catalog.selected_vehicle.initial_odd_km if catalog.selected_vehicle else 0,
-            )
-        ],
+        summary_items=summary_items,
+        summary_groups=_build_summary_groups(summary_items),
+        summary_mobile_primary=_pick_summary_items(summary_items, SUMMARY_MOBILE_PRIMARY_LABELS, split_value=True),
+        summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
         record_cards=format_record_cards(records),
         notices=notices,
         errors=errors,
