@@ -11,65 +11,65 @@
       <div class="form-grid">
         <label class="form-field">
           <span class="field-label">日付</span>
-          <input type="date" name="date" value="{{ form_values.date }}" required>
-          {% if form_errors.date %}<small class="field-error">{{ form_errors.date }}</small>{% endif %}
+          <input type="date" name="date" value="{{ '' if edit_state else form_values.date }}" required>
+          {% if not edit_state and form_errors.date %}<small class="field-error">{{ form_errors.date }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">時刻</span>
-          <input type="time" name="time" value="{{ form_values.time }}" required>
-          {% if form_errors.time %}<small class="field-error">{{ form_errors.time }}</small>{% endif %}
+          <input type="time" name="time" value="{{ '' if edit_state else form_values.time }}" required>
+          {% if not edit_state and form_errors.time %}<small class="field-error">{{ form_errors.time }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">給油量 (L)</span>
-          <input type="number" inputmode="decimal" step="0.01" min="0" name="fuel_l" value="{{ form_values.fuel_l }}" required>
-          {% if form_errors.fuel_l %}<small class="field-error">{{ form_errors.fuel_l }}</small>{% endif %}
+          <input type="number" inputmode="decimal" step="0.01" min="0" name="fuel_l" value="{{ '' if edit_state else form_values.fuel_l }}" required>
+          {% if not edit_state and form_errors.fuel_l %}<small class="field-error">{{ form_errors.fuel_l }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">価格 (円)</span>
-          <input type="number" inputmode="numeric" step="1" min="0" name="price_yen" value="{{ form_values.price_yen }}" required>
-          {% if form_errors.price_yen %}<small class="field-error">{{ form_errors.price_yen }}</small>{% endif %}
+          <input type="number" inputmode="numeric" step="1" min="0" name="price_yen" value="{{ '' if edit_state else form_values.price_yen }}" required>
+          {% if not edit_state and form_errors.price_yen %}<small class="field-error">{{ form_errors.price_yen }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">区間距離 (km)</span>
-          <input type="number" inputmode="decimal" step="0.1" min="0" name="trip_km" value="{{ form_values.trip_km }}" placeholder="例: 120.5">
-          {% if form_errors.trip_km %}<small class="field-error">{{ form_errors.trip_km }}</small>{% endif %}
+          <input type="number" inputmode="decimal" step="0.1" min="0" name="trip_km" value="{{ '' if edit_state else form_values.trip_km }}" placeholder="例: 120.5">
+          {% if not edit_state and form_errors.trip_km %}<small class="field-error">{{ form_errors.trip_km }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">積算距離 (km)</span>
-          <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ form_values.odd_km }}" placeholder="例: 12540.0">
-          {% if form_errors.odd_km %}<small class="field-error">{{ form_errors.odd_km }}</small>{% endif %}
+          <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ '' if edit_state else form_values.odd_km }}" placeholder="例: 12540.0">
+          {% if not edit_state and form_errors.odd_km %}<small class="field-error">{{ form_errors.odd_km }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">満タン給油</span>
           <select name="full" required>
             {% for option in form_options.full %}
-              <option value="{{ option.value }}" {% if option.value == form_values.full %}selected{% endif %}>{{ option.label }}</option>
+              <option value="{{ option.value }}" {% if option.value == ('yes' if edit_state else form_values.full) %}selected{% endif %}>{{ option.label }}</option>
             {% endfor %}
           </select>
-          {% if form_errors.full %}<small class="field-error">{{ form_errors.full }}</small>{% endif %}
+          {% if not edit_state and form_errors.full %}<small class="field-error">{{ form_errors.full }}</small>{% endif %}
         </label>
 
         <label class="form-field">
           <span class="field-label">油種</span>
           <select name="fuel_type" required>
             {% for option in form_options.fuel_type %}
-              <option value="{{ option.value }}" {% if option.value == form_values.fuel_type %}selected{% endif %}>{{ option.label }}</option>
+              <option value="{{ option.value }}" {% if option.value == ('regular' if edit_state else form_values.fuel_type) %}selected{% endif %}>{{ option.label }}</option>
             {% endfor %}
           </select>
-          {% if form_errors.fuel_type %}<small class="field-error">{{ form_errors.fuel_type }}</small>{% endif %}
+          {% if not edit_state and form_errors.fuel_type %}<small class="field-error">{{ form_errors.fuel_type }}</small>{% endif %}
         </label>
       </div>
 
       <label class="form-field">
         <span class="field-label">メモ</span>
-        <textarea name="note" rows="3" placeholder="任意メモ">{{ form_values.note }}</textarea>
-        {% if form_errors.note %}<small class="field-error">{{ form_errors.note }}</small>{% endif %}
+        <textarea name="note" rows="3" placeholder="任意メモ">{{ '' if edit_state else form_values.note }}</textarea>
+        {% if not edit_state and form_errors.note %}<small class="field-error">{{ form_errors.note }}</small>{% endif %}
       </label>
 
       <div class="form-actions">
@@ -118,6 +118,24 @@
                 <strong>{{ record.meta_items[7].value }}</strong>
               </div>
               <div class="record-row__action">
+                <button
+                  class="icon-button icon-button--edit"
+                  type="button"
+                  data-record-edit
+                  data-record-index="{{ record.delete_index }}"
+                  data-row-id="{{ record.row_id }}"
+                  data-date="{{ record.form_values.date }}"
+                  data-time="{{ record.form_values.time }}"
+                  data-fuel-l="{{ record.form_values.fuel_l }}"
+                  data-price-yen="{{ record.form_values.price_yen }}"
+                  data-trip-km="{{ record.form_values.trip_km }}"
+                  data-odd-km="{{ record.form_values.odd_km }}"
+                  data-full="{{ record.form_values.full }}"
+                  data-fuel-type="{{ record.form_values.fuel_type }}"
+                  data-note="{{ record.form_values.note }}"
+                  aria-label="編集"
+                  title="編集"
+                >✎</button>
                 <form
                   method="post"
                   action="{{ url_for('main.delete_record_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.delete_record_entry') }}"
@@ -125,7 +143,7 @@
                 >
                   <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
                   <input type="hidden" name="record_index" value="{{ record.delete_index }}">
-                  <button class="danger-button danger-button--quiet" type="submit" aria-label="削除">×</button>
+                  <button class="danger-button danger-button--quiet" type="submit" aria-label="削除" title="削除">×</button>
                 </form>
               </div>
             </div>
@@ -167,4 +185,96 @@
       </ul>
     </section>
   {% endif %}
+
+  <div
+    class="modal-backdrop {% if edit_state %}is-open{% endif %}"
+    data-record-edit-modal
+    {% if not edit_state %}hidden{% endif %}
+  >
+    <div class="record-edit-modal" role="dialog" aria-modal="true" aria-labelledby="record-edit-title">
+      <div class="record-edit-modal__header">
+        <h3 id="record-edit-title">記録編集</h3>
+        <button class="icon-button" type="button" data-record-edit-close aria-label="閉じる" title="閉じる">×</button>
+      </div>
+      <form
+        class="record-form record-edit-modal__form"
+        method="post"
+        action="{{ url_for('main.update_record_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.update_record_entry') }}"
+        data-record-modal-form
+      >
+        <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+        <input type="hidden" name="record_index" value="{{ edit_state.record_index if edit_state else '' }}">
+        <input type="hidden" name="row_id" value="{{ edit_state.row_id if edit_state else '' }}">
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="field-label">日付</span>
+            <input type="date" name="date" value="{{ form_values.date if edit_state else '' }}" required>
+            {% if edit_state and form_errors.date %}<small class="field-error">{{ form_errors.date }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">時刻</span>
+            <input type="time" name="time" value="{{ form_values.time if edit_state else '' }}" required>
+            {% if edit_state and form_errors.time %}<small class="field-error">{{ form_errors.time }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">給油量 (L)</span>
+            <input type="number" inputmode="decimal" step="0.01" min="0" name="fuel_l" value="{{ form_values.fuel_l if edit_state else '' }}" required>
+            {% if edit_state and form_errors.fuel_l %}<small class="field-error">{{ form_errors.fuel_l }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">価格 (円)</span>
+            <input type="number" inputmode="numeric" step="1" min="0" name="price_yen" value="{{ form_values.price_yen if edit_state else '' }}" required>
+            {% if edit_state and form_errors.price_yen %}<small class="field-error">{{ form_errors.price_yen }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">区間距離 (km)</span>
+            <input type="number" inputmode="decimal" step="0.1" min="0" name="trip_km" value="{{ form_values.trip_km if edit_state else '' }}">
+            {% if edit_state and form_errors.trip_km %}<small class="field-error">{{ form_errors.trip_km }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">積算距離 (km)</span>
+            <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ form_values.odd_km if edit_state else '' }}">
+            {% if edit_state and form_errors.odd_km %}<small class="field-error">{{ form_errors.odd_km }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">満タン給油</span>
+            <select name="full" required>
+              {% for option in form_options.full %}
+                <option value="{{ option.value }}" {% if option.value == form_values.full %}selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+            {% if edit_state and form_errors.full %}<small class="field-error">{{ form_errors.full }}</small>{% endif %}
+          </label>
+
+          <label class="form-field">
+            <span class="field-label">油種</span>
+            <select name="fuel_type" required>
+              {% for option in form_options.fuel_type %}
+                <option value="{{ option.value }}" {% if option.value == form_values.fuel_type %}selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+            {% if edit_state and form_errors.fuel_type %}<small class="field-error">{{ form_errors.fuel_type }}</small>{% endif %}
+          </label>
+        </div>
+
+        <label class="form-field">
+          <span class="field-label">メモ</span>
+          <textarea name="note" rows="3">{{ form_values.note if edit_state else '' }}</textarea>
+          {% if edit_state and form_errors.note %}<small class="field-error">{{ form_errors.note }}</small>{% endif %}
+        </label>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit">保存</button>
+          <button class="secondary-button" type="button" data-record-edit-close>キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}

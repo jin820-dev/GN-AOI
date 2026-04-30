@@ -7,6 +7,7 @@ from app.services.dashboard import build_home_view_model
 from app.services.record_create_service import create_record
 from app.services.record_delete_service import delete_record
 from app.services.record_import_service import import_records
+from app.services.record_update_service import update_record
 from app.services.vehicle_service import create_vehicle, delete_vehicle, load_vehicle_catalog, resolve_vehicle_csv_path
 
 main_bp = Blueprint("main", __name__)
@@ -115,6 +116,53 @@ def delete_record_entry():
         flash(result.error_message or "記録を削除できませんでした。", "error")
 
     return redirect(url_for("main.records", vehicle=catalog.selected_vehicle.id))
+
+
+@main_bp.post("/records/update")
+def update_record_entry():
+    data_dir = Path(current_app.config["DATA_DIR"])
+    selected_vehicle_id = request.args.get("vehicle") or request.form.get("vehicle")
+
+    catalog = load_vehicle_catalog(data_dir=data_dir, selected_vehicle_id=selected_vehicle_id)
+    if catalog.selected_vehicle is None:
+        flash("編集対象の車両を特定できませんでした。", "error")
+        return redirect(url_for("main.records", vehicle=selected_vehicle_id) if selected_vehicle_id else url_for("main.records"))
+
+    record_index_raw = request.form.get("record_index", "").strip()
+    try:
+        record_index = int(record_index_raw)
+    except ValueError:
+        flash("編集対象の記録インデックスが不正です。", "error")
+        return redirect(url_for("main.records", vehicle=catalog.selected_vehicle.id))
+
+    form_input = {key: request.form.get(key, "") for key in current_app.config["CSV_HEADER"]}
+    csv_path = resolve_vehicle_csv_path(data_dir=data_dir, vehicle=catalog.selected_vehicle)
+    result = update_record(
+        csv_path=csv_path,
+        record_index=record_index,
+        row_id=request.form.get("row_id", "").strip(),
+        form_input=form_input,
+    )
+
+    if result.success:
+        flash(result.message or "記録を更新しました。", "success")
+        return redirect(url_for("main.records", vehicle=catalog.selected_vehicle.id))
+
+    view_model = build_home_view_model(
+        app_name=current_app.config["APP_NAME"],
+        data_dir=data_dir,
+        selected_vehicle_id=catalog.selected_vehicle.id,
+        form_state=result.form_state,
+        edit_state={
+            "record_index": record_index_raw,
+            "row_id": request.form.get("row_id", "").strip(),
+        },
+        page_key="records",
+        page_title="記録",
+    )
+    if result.error_message:
+        view_model["errors"].append(result.error_message)
+    return render_template("records.html", **view_model), 400
 
 
 @main_bp.post("/settings/import")

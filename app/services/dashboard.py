@@ -29,6 +29,7 @@ class HomeViewModel:
     form_values: dict[str, str]
     form_errors: dict[str, str]
     form_options: dict[str, list[dict[str, str]]]
+    edit_state: dict[str, str] | None
 
 
 SUMMARY_GROUP_DEFINITIONS = [
@@ -103,6 +104,7 @@ def build_home_view_model(
     data_dir: Path,
     selected_vehicle_id: str | None,
     form_state: CreateFormState | None = None,
+    edit_state: dict[str, str] | None = None,
     page_key: str = "home",
     page_title: str = "ホーム",
 ) -> dict:
@@ -152,5 +154,6 @@ def build_home_view_model(
         form_values=resolved_form_state.values,
         form_errors=resolved_form_state.errors,
         form_options=build_form_options(),
+        edit_state=edit_state,
     )
     return asdict(model)

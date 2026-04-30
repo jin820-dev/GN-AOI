@@ -10,6 +10,7 @@ class RecordCard:
     title: str
     subtitle: str
     economy_label: str
+    form_values: dict[str, str]
     meta_items: list[dict[str, str]]
 
 
@@ -39,6 +40,17 @@ def format_record_cards(records: list[CsvRecord]) -> list[dict]:
             title=record.date or "日付不明",
             subtitle=record.time or "時刻未設定",
             economy_label=_format_float(record.economy_km_l, "km/L", digits=2),
+            form_values={
+                "date": record.date,
+                "time": record.time,
+                "fuel_l": record.fuel_l,
+                "price_yen": record.price_yen,
+                "trip_km": record.trip_km,
+                "odd_km": record.odd_km,
+                "full": record.full,
+                "fuel_type": record.fuel_type,
+                "note": record.note,
+            },
             meta_items=[
                 {"label": "給油量", "value": _format_float(record.fuel_l_value, "L", digits=2)},
                 {"label": "価格", "value": _format_currency(record.price_yen_value, record.price_yen)},
