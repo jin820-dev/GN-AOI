@@ -74,6 +74,29 @@
 
   <section class="panel">
     <div class="panel__header">
+      <h3>記録エクスポート</h3>
+    </div>
+    <form
+      class="record-form"
+      method="get"
+      action="{{ url_for('main.export_records_entry') }}"
+    >
+      <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+      <p class="support-text">
+        {% if selected_vehicle_id %}
+          選択中の車両「{{ vehicle_label }}」の記録CSVをダウンロードします。
+        {% else %}
+          エクスポートには車両選択が必要です。
+        {% endif %}
+      </p>
+      <div class="form-actions">
+        <button class="primary-button" type="submit" {% if not selected_vehicle_id %}disabled{% endif %}>選択車両CSVをエクスポート</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
       <h3>初期化</h3>
     </div>
     <form

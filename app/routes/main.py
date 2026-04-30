@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, send_file, url_for
 
 from app.services.data_reset_service import reset_all_data
 from app.services.dashboard import build_home_view_model
@@ -142,6 +142,35 @@ def import_records_entry():
             flash(f"ほか {len(result.error_details) - 5} 件のエラーがあります。", "error")
 
     return redirect(url_for("main.settings", vehicle=catalog.selected_vehicle.id))
+
+
+@main_bp.get("/settings/export")
+def export_records_entry():
+    data_dir = Path(current_app.config["DATA_DIR"])
+    selected_vehicle_id = request.args.get("vehicle")
+    catalog = load_vehicle_catalog(data_dir=data_dir, selected_vehicle_id=selected_vehicle_id)
+
+    if catalog.selected_vehicle is None:
+        flash("エクスポート対象の車両を特定できませんでした。", "error")
+        return redirect(url_for("main.settings"))
+
+    csv_path = resolve_vehicle_csv_path(data_dir=data_dir, vehicle=catalog.selected_vehicle)
+    download_name = f"gnaoi-{catalog.selected_vehicle.id}.csv"
+
+    if csv_path.exists():
+        return send_file(
+            csv_path,
+            mimetype="text/csv; charset=utf-8",
+            as_attachment=True,
+            download_name=download_name,
+        )
+
+    header = ",".join(current_app.config["CSV_HEADER"]) + "\n"
+    return Response(
+        header,
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={download_name}"},
+    )
 
 
 @main_bp.post("/settings/vehicles")
