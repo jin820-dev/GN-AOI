@@ -23,6 +23,7 @@ class HomeViewModel:
     summary_groups: list[dict]
     summary_mobile_primary: list[dict[str, str]]
     summary_mobile_details: list[dict[str, str]]
+    summary_mobile_detail_groups: list[dict]
     fuel_economy_chart: dict[str, list]
     fuel_price_chart: dict[str, list]
     monthly_summaries: list[dict[str, str]]
@@ -44,25 +45,33 @@ SUMMARY_GROUP_DEFINITIONS = [
     {
         "key": "fuel-cost",
         "label": "給油・費用",
-        "metrics": ["給油回数", "総給油金額", "平均給油金額", "平均燃料単価", "平均給油量"],
+        "metrics": ["給油回数", "今月給油金額", "今年給油金額", "総給油金額", "平均給油金額", "平均燃料単価", "平均給油量"],
     },
     {"key": "vehicle", "label": "車両情報", "metrics": ["初期ODD", "現在ODD", "直近給油日"]},
 ]
 
 SUMMARY_MOBILE_PRIMARY_LABELS = ["直近燃費", "平均燃費", "最高燃費"]
+SUMMARY_MOBILE_DETAIL_GROUP_DEFINITIONS = [
+    {"label": "車両・走行", "metrics": ["初期ODD", "現在ODD", "総走行距離", "直近給油日"]},
+    {"label": "燃費", "metrics": ["平均燃費", "直近燃費", "直近5回平均", "最高燃費", "最低燃費"]},
+    {
+        "label": "給油・費用",
+        "metrics": [
+            "給油回数",
+            "総給油量",
+            "平均給油量",
+            "今月給油金額",
+            "今年給油金額",
+            "総給油金額",
+            "平均給油金額",
+            "平均燃料単価",
+        ],
+    },
+]
 SUMMARY_MOBILE_DETAIL_LABELS = [
-    "総走行距離",
-    "総給油量",
-    "直近5回平均",
-    "最低燃費",
-    "給油回数",
-    "総給油金額",
-    "平均給油金額",
-    "平均燃料単価",
-    "平均給油量",
-    "初期ODD",
-    "現在ODD",
-    "直近給油日",
+    label
+    for group in SUMMARY_MOBILE_DETAIL_GROUP_DEFINITIONS
+    for label in group["metrics"]
 ]
 
 
@@ -104,6 +113,16 @@ def _pick_summary_items(summary_items: list[dict[str, str]], labels: list[str], 
             picked_item.update(_split_value_unit(picked_item["value"]))
         picked_items.append(picked_item)
     return picked_items
+
+
+def _build_mobile_detail_groups(summary_items: list[dict[str, str]]) -> list[dict]:
+    return [
+        {
+            "label": group["label"],
+            "metrics": _pick_summary_items(summary_items, group["metrics"]),
+        }
+        for group in SUMMARY_MOBILE_DETAIL_GROUP_DEFINITIONS
+    ]
 
 
 def _build_fuel_economy_chart(records: list) -> dict[str, list]:
@@ -302,6 +321,7 @@ def build_home_view_model(
         summary_groups=_build_summary_groups(summary_items),
         summary_mobile_primary=_pick_summary_items(summary_items, SUMMARY_MOBILE_PRIMARY_LABELS, split_value=True),
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
+        summary_mobile_detail_groups=_build_mobile_detail_groups(summary_items),
         fuel_economy_chart=_build_fuel_economy_chart(records),
         fuel_price_chart=_build_fuel_price_chart(records),
         monthly_summaries=monthly_summaries,

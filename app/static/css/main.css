@@ -237,6 +237,23 @@ textarea {
   font-weight: 700;
 }
 
+.summary-detail-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-detail-group {
+  display: grid;
+  gap: 6px;
+}
+
+.summary-detail-group__title {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
 .summary-detail-list {
   margin: 0;
   padding: 8px 10px;
@@ -254,7 +271,8 @@ textarea {
   border-bottom: 1px solid var(--border);
 }
 
-.summary-detail-list__item:nth-last-child(-n + 2) {
+.summary-detail-list__item:nth-last-child(1),
+.summary-detail-list__item:nth-last-child(2):nth-child(odd) {
   border-bottom: 0;
 }
 

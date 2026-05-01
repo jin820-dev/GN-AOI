@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date, datetime
 
 from app.services.csv_loader import CsvRecord
 
@@ -37,6 +38,14 @@ def _format_date(value: str | None) -> str:
     return value if value else "-"
 
 
+def _is_valid_record_date(value: str) -> bool:
+    try:
+        datetime.strptime(value, "%Y-%m-%d")
+    except ValueError:
+        return False
+    return True
+
+
 def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[SummaryMetric]:
     trip_distance = sum(record.trip_km_value for record in records if record.trip_km_value is not None)
     fallback_total_distance = initial_odd_km + trip_distance
@@ -63,6 +72,22 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
     )
 
     total_price = sum(price_values)
+    current_month = date.today().strftime("%Y-%m")
+    current_year = date.today().strftime("%Y")
+    monthly_price = sum(
+        record.price_yen_value
+        for record in records
+        if record.price_yen_value is not None
+        and _is_valid_record_date(record.date)
+        and record.date[:7] == current_month
+    )
+    yearly_price = sum(
+        record.price_yen_value
+        for record in records
+        if record.price_yen_value is not None
+        and _is_valid_record_date(record.date)
+        and record.date[:4] == current_year
+    )
     average_price = total_price / len(price_values) if price_values else None
     average_unit_price = total_price / total_fuel if total_price > 0 and total_fuel > 0 else None
     average_fuel = total_fuel / len(fuel_values) if fuel_values else None
@@ -82,6 +107,8 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
         SummaryMetric(label="最低燃費", value=_format_economy(min(economy_values) if economy_values else None)),
         SummaryMetric(label="直近燃費", value=_format_economy(latest_economy)),
         SummaryMetric(label="給油回数", value=_format_count(len(records))),
+        SummaryMetric(label="今月給油金額", value=_format_currency(monthly_price if monthly_price > 0 else None)),
+        SummaryMetric(label="今年給油金額", value=_format_currency(yearly_price if yearly_price > 0 else None)),
         SummaryMetric(label="総給油金額", value=_format_currency(total_price if price_values else None)),
         SummaryMetric(label="平均給油金額", value=_format_currency(average_price)),
         SummaryMetric(label="平均燃料単価", value=_format_unit_price(average_unit_price)),

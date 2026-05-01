@@ -27,14 +27,23 @@
 
       <section class="summary-mobile-section">
         <h4 class="summary-group__title">DETAIL</h4>
-        <dl class="summary-detail-list">
-          {% for item in summary_mobile_details %}
-            <div class="summary-detail-list__item">
-              <dt>{{ item.label }}</dt>
-              <dd>{{ item.value }}</dd>
-            </div>
+        <div class="summary-detail-groups">
+          {% for group in summary_mobile_detail_groups %}
+            {% if group.metrics %}
+              <section class="summary-detail-group">
+                <h5 class="summary-detail-group__title">{{ group.label }}</h5>
+                <dl class="summary-detail-list">
+                  {% for item in group.metrics %}
+                    <div class="summary-detail-list__item">
+                      <dt>{{ item.label }}</dt>
+                      <dd>{{ item.value }}</dd>
+                    </div>
+                  {% endfor %}
+                </dl>
+              </section>
+            {% endif %}
           {% endfor %}
-        </dl>
+        </div>
       </section>
     </div>
 
