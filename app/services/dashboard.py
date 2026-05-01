@@ -38,7 +38,7 @@ class HomeViewModel:
 
 SUMMARY_GROUP_DEFINITIONS = [
     {"key": "basic", "label": "基本", "metrics": ["総走行距離", "総給油量", "平均燃費"]},
-    {"key": "economy", "label": "燃費", "metrics": ["直近燃費", "最高燃費", "最低燃費"]},
+    {"key": "economy", "label": "燃費", "metrics": ["直近燃費", "直近5回平均", "最高燃費", "最低燃費"]},
     {
         "key": "fuel-cost",
         "label": "給油・費用",
@@ -51,6 +51,7 @@ SUMMARY_MOBILE_PRIMARY_LABELS = ["直近燃費", "平均燃費", "最高燃費"]
 SUMMARY_MOBILE_DETAIL_LABELS = [
     "総走行距離",
     "総給油量",
+    "直近5回平均",
     "最低燃費",
     "給油回数",
     "総給油金額",

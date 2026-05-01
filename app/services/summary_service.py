@@ -55,6 +55,13 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
     if trip_distance > 0 and total_fuel > 0:
         average_economy = trip_distance / total_fuel
 
+    recent_5_economy_values = economy_values[:5]
+    recent_5_average_economy = (
+        round(sum(recent_5_economy_values) / len(recent_5_economy_values), 2)
+        if recent_5_economy_values
+        else None
+    )
+
     total_price = sum(price_values)
     average_price = total_price / len(price_values) if price_values else None
     average_unit_price = total_price / total_fuel if total_price > 0 and total_fuel > 0 else None
@@ -70,6 +77,7 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
         SummaryMetric(label="総走行距離", value=_format_distance(total_distance if total_distance > 0 else None)),
         SummaryMetric(label="総給油量", value=_format_fuel(total_fuel if total_fuel > 0 else None)),
         SummaryMetric(label="平均燃費", value=_format_economy(average_economy)),
+        SummaryMetric(label="直近5回平均", value=_format_economy(recent_5_average_economy)),
         SummaryMetric(label="最高燃費", value=_format_economy(max(economy_values) if economy_values else None)),
         SummaryMetric(label="最低燃費", value=_format_economy(min(economy_values) if economy_values else None)),
         SummaryMetric(label="直近燃費", value=_format_economy(latest_economy)),
