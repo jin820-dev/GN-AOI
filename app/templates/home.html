@@ -57,6 +57,25 @@
     </div>
   </section>
 
+  <section class="panel">
+    <div class="panel__header">
+      <h3>燃費推移</h3>
+    </div>
+    {% if fuel_economy_chart["values"] %}
+      <div class="chart-frame">
+        <canvas
+          data-fuel-economy-chart="{{ fuel_economy_chart | tojson | forceescape }}"
+          aria-label="燃費推移"
+          role="img"
+        ></canvas>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>グラフ表示に必要な燃費データがありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
   {% if notices %}
     <section class="panel">
       <div class="panel__header">

@@ -22,6 +22,7 @@ class HomeViewModel:
     summary_groups: list[dict]
     summary_mobile_primary: list[dict[str, str]]
     summary_mobile_details: list[dict[str, str]]
+    fuel_economy_chart: dict[str, list]
     record_cards: list[dict]
     notices: list[str]
     errors: list[str]
@@ -99,6 +100,35 @@ def _pick_summary_items(summary_items: list[dict[str, str]], labels: list[str], 
     return picked_items
 
 
+def _build_fuel_economy_chart(records: list) -> dict[str, list]:
+    points = []
+    cumulative_distance = 0
+    cumulative_fuel = 0
+
+    for record in reversed(records):
+        if record.economy_km_l is None or record.trip_km_value is None or record.fuel_l_value is None:
+            continue
+
+        cumulative_distance += record.trip_km_value
+        cumulative_fuel += record.fuel_l_value
+        if cumulative_fuel <= 0:
+            continue
+
+        points.append(
+            {
+                "label": record.date,
+                "value": record.economy_km_l,
+                "average_value": round(cumulative_distance / cumulative_fuel, 2),
+            }
+        )
+
+    return {
+        "labels": [point["label"] for point in points],
+        "values": [point["value"] for point in points],
+        "average_values": [point["average_value"] for point in points],
+    }
+
+
 def build_home_view_model(
     app_name: str,
     data_dir: Path,
@@ -147,6 +177,7 @@ def build_home_view_model(
         summary_groups=_build_summary_groups(summary_items),
         summary_mobile_primary=_pick_summary_items(summary_items, SUMMARY_MOBILE_PRIMARY_LABELS, split_value=True),
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
+        fuel_economy_chart=_build_fuel_economy_chart(records),
         record_cards=format_record_cards(records),
         notices=notices,
         errors=errors,

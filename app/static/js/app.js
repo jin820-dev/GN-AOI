@@ -93,6 +93,119 @@ function setupRecordEditForm() {
   }
 }
 
+function setupFuelEconomyChart() {
+  const canvas = document.querySelector("[data-fuel-economy-chart]");
+  if (!canvas || !window.Chart) {
+    return;
+  }
+
+  let chartData;
+  try {
+    chartData = JSON.parse(canvas.dataset.fuelEconomyChart || "{}");
+  } catch (error) {
+    return;
+  }
+
+  const labels = Array.isArray(chartData.labels) ? chartData.labels : [];
+  const values = Array.isArray(chartData.values) ? chartData.values : [];
+  const averageValues = Array.isArray(chartData.average_values) ? chartData.average_values : [];
+  if (!labels.length || !values.length) {
+    return;
+  }
+
+  const styles = getComputedStyle(document.documentElement);
+  const textColor = styles.getPropertyValue("--text").trim() || "#143043";
+  const softTextColor = styles.getPropertyValue("--text-soft").trim() || "#5c7385";
+  const borderColor = styles.getPropertyValue("--border").trim() || "rgba(20, 48, 67, 0.1)";
+  const accentColor = styles.getPropertyValue("--accent-strong").trim() || "#1b7faf";
+  const accentFill = styles.getPropertyValue("--accent-soft").trim() || "rgba(47, 159, 209, 0.14)";
+  const averageColor = "#f59e0b";
+  const xTickLimit = window.innerWidth < 600 ? 4 : 8;
+
+  new window.Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "燃費",
+          data: values,
+          borderColor: accentColor,
+          backgroundColor: accentFill,
+          borderWidth: 2,
+          pointRadius: values.length > 40 ? 0 : 2.5,
+          pointHoverRadius: 4,
+          tension: 0.25,
+          fill: true,
+        },
+        {
+          label: "平均燃費",
+          data: averageValues,
+          borderColor: averageColor,
+          backgroundColor: "transparent",
+          borderWidth: 2,
+          pointRadius: values.length > 40 ? 0 : 2,
+          pointHoverRadius: 4,
+          tension: 0.25,
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: "index",
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: textColor,
+            boxWidth: 12,
+            boxHeight: 12,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)} km/L`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: softTextColor,
+            autoSkip: true,
+            maxTicksLimit: xTickLimit,
+            maxRotation: 0,
+            minRotation: 0,
+          },
+        },
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: "km/L",
+            color: softTextColor,
+          },
+          grid: {
+            color: borderColor,
+          },
+          ticks: {
+            color: textColor,
+            callback: (value) => `${value}`,
+          },
+        },
+      },
+    },
+  });
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
     return;
@@ -107,4 +220,5 @@ function registerServiceWorker() {
 
 setupThemeToggle();
 setupRecordEditForm();
+setupFuelEconomyChart();
 registerServiceWorker();

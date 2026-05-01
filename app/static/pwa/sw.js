@@ -1,9 +1,10 @@
-const CACHE_NAME = "gnaoi-shell-v1";
+const CACHE_NAME = "gnaoi-shell-v2";
 const ASSETS = [
   "/",
   "/static/css/main.css",
   "/static/js/app.js",
   "/static/js/theme.js",
+  "/static/vendor/chart.umd.min.js",
   "/static/pwa/manifest.json",
   "/static/pwa/icon.svg",
 ];
