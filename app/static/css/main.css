@@ -674,6 +674,25 @@ textarea {
   white-space: nowrap;
 }
 
+.record-row__cell--economy.is-anomaly strong {
+  color: #b45309;
+}
+
+.record-row__check-label {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 3px;
+  padding: 1px 6px;
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 .record-row__cell--distance strong,
 .record-row__cell--fuel strong {
   white-space: nowrap;

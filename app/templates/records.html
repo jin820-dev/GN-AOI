@@ -109,9 +109,12 @@
                   <span class="record-row__mobile-label">給油量</span>
                   <strong>{{ record.meta_items[0].value }}</strong>
                 </div>
-                <div class="record-row__cell record-row__cell--economy">
+                <div class="record-row__cell record-row__cell--economy {% if record.is_economy_anomaly %}is-anomaly{% endif %}">
                   <span class="record-row__mobile-label">燃費</span>
                   <strong>{{ record.economy_label }}</strong>
+                  {% if record.is_economy_anomaly %}
+                    <span class="record-row__check-label">要確認</span>
+                  {% endif %}
                 </div>
               </div>
               <div class="record-row__cell record-row__cell--note">

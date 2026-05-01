@@ -156,6 +156,24 @@ def _build_initial_form_state(last_record: dict[str, str] | None) -> CreateFormS
     return build_record_form_state(values=values)
 
 
+def _is_economy_anomaly(economy_km_l: float | None, average_economy: float | None) -> bool:
+    if economy_km_l is None or average_economy is None or average_economy <= 0:
+        return False
+    return abs(economy_km_l - average_economy) / average_economy >= 0.20
+
+
+def _format_record_cards(records: list) -> list[dict]:
+    total_distance = sum(record.trip_km_value for record in records if record.trip_km_value is not None)
+    total_fuel = sum(record.fuel_l_value for record in records if record.fuel_l_value is not None)
+    average_economy = total_distance / total_fuel if total_distance > 0 and total_fuel > 0 else None
+    cards = format_record_cards(records)
+
+    for card, record in zip(cards, records):
+        card["is_economy_anomaly"] = _is_economy_anomaly(record.economy_km_l, average_economy)
+
+    return cards
+
+
 def build_home_view_model(
     app_name: str,
     data_dir: Path,
@@ -208,7 +226,7 @@ def build_home_view_model(
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
         fuel_economy_chart=_build_fuel_economy_chart(records),
         last_record=last_record,
-        record_cards=format_record_cards(records),
+        record_cards=_format_record_cards(records),
         notices=notices,
         errors=errors,
         has_records=bool(records),
