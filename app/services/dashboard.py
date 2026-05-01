@@ -24,6 +24,7 @@ class HomeViewModel:
     summary_mobile_primary: list[dict[str, str]]
     summary_mobile_details: list[dict[str, str]]
     fuel_economy_chart: dict[str, list]
+    fuel_price_chart: dict[str, list]
     last_record: dict[str, str] | None
     record_cards: list[dict]
     notices: list[str]
@@ -131,6 +132,21 @@ def _build_fuel_economy_chart(records: list) -> dict[str, list]:
     }
 
 
+def _build_fuel_price_chart(records: list) -> dict[str, list]:
+    points = [
+        {
+            "label": record.date,
+            "value": round(record.price_yen_value / record.fuel_l_value, 1),
+        }
+        for record in reversed(records)
+        if record.price_yen_value is not None and record.fuel_l_value is not None and record.fuel_l_value > 0
+    ]
+    return {
+        "labels": [point["label"] for point in points],
+        "values": [point["value"] for point in points],
+    }
+
+
 def _build_last_record(records: list) -> dict[str, str] | None:
     if not records:
         return None
@@ -225,6 +241,7 @@ def build_home_view_model(
         summary_mobile_primary=_pick_summary_items(summary_items, SUMMARY_MOBILE_PRIMARY_LABELS, split_value=True),
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
         fuel_economy_chart=_build_fuel_economy_chart(records),
+        fuel_price_chart=_build_fuel_price_chart(records),
         last_record=last_record,
         record_cards=_format_record_cards(records),
         notices=notices,

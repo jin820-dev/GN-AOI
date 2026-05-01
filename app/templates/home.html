@@ -84,6 +84,33 @@
     {% endif %}
   </section>
 
+  <section class="panel">
+    <div class="panel__header">
+      <h3>燃料単価推移</h3>
+      {% if fuel_price_chart["values"] %}
+        <div class="chart-range" aria-label="グラフ期間">
+          <button class="chart-range__button is-active" type="button" data-range="all">全期間</button>
+          <button class="chart-range__button" type="button" data-range="365">1年</button>
+          <button class="chart-range__button" type="button" data-range="90">90日</button>
+          <button class="chart-range__button" type="button" data-range="30">30日</button>
+        </div>
+      {% endif %}
+    </div>
+    {% if fuel_price_chart["values"] %}
+      <div class="chart-frame">
+        <canvas
+          data-fuel-price-chart="{{ fuel_price_chart | tojson | forceescape }}"
+          aria-label="燃料単価推移"
+          role="img"
+        ></canvas>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>グラフ表示に必要な燃料単価データがありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
   {% if notices %}
     <section class="panel">
       <div class="panel__header">

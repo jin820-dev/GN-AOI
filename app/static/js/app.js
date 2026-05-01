@@ -98,6 +98,7 @@ function setupFuelEconomyChart() {
   if (!canvas || !window.Chart) {
     return;
   }
+  const chartPanel = canvas.closest(".panel") || document;
 
   let chartData;
   try {
@@ -243,7 +244,7 @@ function setupFuelEconomyChart() {
     },
   });
 
-  document.querySelectorAll("[data-range]").forEach((button) => {
+  chartPanel.querySelectorAll("[data-range]").forEach((button) => {
     button.addEventListener("click", () => {
       const filtered = filterChartData(button.dataset.range || "all");
       chart.data.labels = filtered.labels;
@@ -251,7 +252,158 @@ function setupFuelEconomyChart() {
       chart.data.datasets[1].data = filtered.averageValues;
       chart.update();
 
-      document.querySelectorAll("[data-range]").forEach((rangeButton) => {
+      chartPanel.querySelectorAll("[data-range]").forEach((rangeButton) => {
+        rangeButton.classList.toggle("is-active", rangeButton === button);
+      });
+    });
+  });
+}
+
+function setupFuelPriceChart() {
+  const canvas = document.querySelector("[data-fuel-price-chart]");
+  if (!canvas || !window.Chart) {
+    return;
+  }
+  const chartPanel = canvas.closest(".panel") || document;
+
+  let chartData;
+  try {
+    chartData = JSON.parse(canvas.dataset.fuelPriceChart || "{}");
+  } catch (error) {
+    return;
+  }
+
+  const labels = Array.isArray(chartData.labels) ? chartData.labels : [];
+  const values = Array.isArray(chartData.values) ? chartData.values : [];
+  if (!labels.length || !values.length) {
+    return;
+  }
+
+  const styles = getComputedStyle(document.documentElement);
+  const textColor = styles.getPropertyValue("--text").trim() || "#143043";
+  const softTextColor = styles.getPropertyValue("--text-soft").trim() || "#5c7385";
+  const borderColor = styles.getPropertyValue("--border").trim() || "rgba(20, 48, 67, 0.1)";
+  const accentColor = "#16a34a";
+  const accentFill = "rgba(22, 163, 74, 0.12)";
+  const xTickLimit = window.innerWidth < 600 ? 4 : 8;
+
+  function parseLocalDate(label) {
+    const parts = String(label).split("-").map((part) => Number.parseInt(part, 10));
+    if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) {
+      return null;
+    }
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function filterChartData(range) {
+    if (range === "all") {
+      return { labels, values };
+    }
+
+    const days = Number.parseInt(range, 10);
+    const latestDate = parseLocalDate(labels[labels.length - 1]);
+    if (Number.isNaN(days) || !latestDate) {
+      return { labels, values };
+    }
+
+    const startDate = new Date(latestDate);
+    startDate.setDate(startDate.getDate() - days);
+
+    const filtered = labels.reduce(
+      (accumulator, label, index) => {
+        const currentDate = parseLocalDate(label);
+        if (currentDate && currentDate >= startDate && currentDate <= latestDate) {
+          accumulator.labels.push(label);
+          accumulator.values.push(values[index]);
+        }
+        return accumulator;
+      },
+      { labels: [], values: [] }
+    );
+
+    return filtered.labels.length ? filtered : { labels, values };
+  }
+
+  const chart = new window.Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "燃料単価",
+          data: values,
+          borderColor: accentColor,
+          backgroundColor: accentFill,
+          borderWidth: 2,
+          pointRadius: values.length > 40 ? 0 : 2.5,
+          pointHoverRadius: 4,
+          tension: 0.25,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: "index",
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: textColor,
+            boxWidth: 12,
+            boxHeight: 12,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(1)} 円/L`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: softTextColor,
+            autoSkip: true,
+            maxTicksLimit: xTickLimit,
+            maxRotation: 0,
+            minRotation: 0,
+          },
+        },
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: "円/L",
+            color: softTextColor,
+          },
+          grid: {
+            color: borderColor,
+          },
+          ticks: {
+            color: textColor,
+            callback: (value) => `${value}`,
+          },
+        },
+      },
+    },
+  });
+
+  chartPanel.querySelectorAll("[data-range]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const filtered = filterChartData(button.dataset.range || "all");
+      chart.data.labels = filtered.labels;
+      chart.data.datasets[0].data = filtered.values;
+      chart.update();
+
+      chartPanel.querySelectorAll("[data-range]").forEach((rangeButton) => {
         rangeButton.classList.toggle("is-active", rangeButton === button);
       });
     });
@@ -273,4 +425,5 @@ function registerServiceWorker() {
 setupThemeToggle();
 setupRecordEditForm();
 setupFuelEconomyChart();
+setupFuelPriceChart();
 registerServiceWorker();
