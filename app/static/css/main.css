@@ -348,6 +348,31 @@ textarea {
   max-width: 100%;
 }
 
+.chart-range {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chart-range__button {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.chart-range__button.is-active {
+  border-color: rgba(47, 159, 209, 0.3);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
 .field-label {
   display: block;
   margin-bottom: 6px;

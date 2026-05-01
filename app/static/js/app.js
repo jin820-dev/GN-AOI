@@ -122,7 +122,45 @@ function setupFuelEconomyChart() {
   const averageColor = "#f59e0b";
   const xTickLimit = window.innerWidth < 600 ? 4 : 8;
 
-  new window.Chart(canvas, {
+  function parseLocalDate(label) {
+    const parts = String(label).split("-").map((part) => Number.parseInt(part, 10));
+    if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) {
+      return null;
+    }
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function filterChartData(range) {
+    if (range === "all") {
+      return { labels, values, averageValues };
+    }
+
+    const days = Number.parseInt(range, 10);
+    const latestDate = parseLocalDate(labels[labels.length - 1]);
+    if (Number.isNaN(days) || !latestDate) {
+      return { labels, values, averageValues };
+    }
+
+    const startDate = new Date(latestDate);
+    startDate.setDate(startDate.getDate() - days);
+
+    const filtered = labels.reduce(
+      (accumulator, label, index) => {
+        const currentDate = parseLocalDate(label);
+        if (currentDate && currentDate >= startDate && currentDate <= latestDate) {
+          accumulator.labels.push(label);
+          accumulator.values.push(values[index]);
+          accumulator.averageValues.push(averageValues[index]);
+        }
+        return accumulator;
+      },
+      { labels: [], values: [], averageValues: [] }
+    );
+
+    return filtered.labels.length ? filtered : { labels, values, averageValues };
+  }
+
+  const chart = new window.Chart(canvas, {
     type: "line",
     data: {
       labels,
@@ -203,6 +241,20 @@ function setupFuelEconomyChart() {
         },
       },
     },
+  });
+
+  document.querySelectorAll("[data-range]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const filtered = filterChartData(button.dataset.range || "all");
+      chart.data.labels = filtered.labels;
+      chart.data.datasets[0].data = filtered.values;
+      chart.data.datasets[1].data = filtered.averageValues;
+      chart.update();
+
+      document.querySelectorAll("[data-range]").forEach((rangeButton) => {
+        rangeButton.classList.toggle("is-active", rangeButton === button);
+      });
+    });
   });
 }
 
