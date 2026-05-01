@@ -39,7 +39,7 @@ def _format_date(value: str | None) -> str:
 
 def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[SummaryMetric]:
     trip_distance = sum(record.trip_km_value for record in records if record.trip_km_value is not None)
-    total_distance = initial_odd_km + trip_distance
+    fallback_total_distance = initial_odd_km + trip_distance
     total_fuel = sum(record.fuel_l_value for record in records if record.fuel_l_value is not None)
     fuel_values = [record.fuel_l_value for record in records if record.fuel_l_value is not None]
     price_values = [record.price_yen_value for record in records if record.price_yen_value is not None]
@@ -49,6 +49,7 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
         None,
     )
     latest_date = next((record.date for record in records if record.date), None)
+    total_distance = latest_odd_km if latest_odd_km is not None else fallback_total_distance
 
     average_economy = None
     if trip_distance > 0 and total_fuel > 0:
@@ -58,7 +59,7 @@ def build_summary(records: list[CsvRecord], initial_odd_km: float = 0) -> list[S
     average_price = total_price / len(price_values) if price_values else None
     average_unit_price = total_price / total_fuel if total_price > 0 and total_fuel > 0 else None
     average_fuel = total_fuel / len(fuel_values) if fuel_values else None
-    current_odd_km = latest_odd_km if latest_odd_km is not None else total_distance
+    current_odd_km = latest_odd_km if latest_odd_km is not None else fallback_total_distance
 
     latest_economy = next(
         (record.economy_km_l for record in records if record.economy_km_l is not None),
