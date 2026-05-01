@@ -126,6 +126,12 @@
         <h3>月別給油集計</h3>
         <p class="panel__subtext">給油日ベースの月別集計です</p>
       </div>
+      {% if selected_vehicle_id %}
+        <a
+          class="secondary-button secondary-button--quiet"
+          href="{{ url_for('main.export_monthly_summary_entry', vehicle=selected_vehicle_id) }}"
+        >月別CSV</a>
+      {% endif %}
     </div>
     {% if monthly_summary_groups %}
       <div class="monthly-summary-years">

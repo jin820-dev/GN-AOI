@@ -1,9 +1,12 @@
+import csv
+import io
 from pathlib import Path
 
 from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, send_file, url_for
 
 from app.services.data_reset_service import reset_all_data
-from app.services.dashboard import build_home_view_model
+from app.services.csv_loader import load_csv_records
+from app.services.dashboard import build_home_view_model, build_monthly_summary_csv_rows
 from app.services.record_create_service import create_record
 from app.services.record_delete_service import delete_record
 from app.services.record_import_service import import_records
@@ -216,6 +219,42 @@ def export_records_entry():
     header = ",".join(current_app.config["CSV_HEADER"]) + "\n"
     return Response(
         header,
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={download_name}"},
+    )
+
+
+@main_bp.get("/settings/export/monthly-summary")
+def export_monthly_summary_entry():
+    data_dir = Path(current_app.config["DATA_DIR"])
+    selected_vehicle_id = request.args.get("vehicle")
+    catalog = load_vehicle_catalog(data_dir=data_dir, selected_vehicle_id=selected_vehicle_id)
+
+    if catalog.selected_vehicle is None:
+        flash("エクスポート対象の車両を特定できませんでした。", "error")
+        return redirect(url_for("main.home"))
+
+    csv_path = resolve_vehicle_csv_path(data_dir=data_dir, vehicle=catalog.selected_vehicle)
+    csv_result = load_csv_records(csv_path)
+    records = list(reversed(csv_result.records)) if csv_result.header_valid else []
+    rows = build_monthly_summary_csv_rows(records)
+
+    output = io.StringIO()
+    fieldnames = [
+        "month",
+        "total_price_yen",
+        "total_fuel_l",
+        "fuel_count",
+        "total_trip_km",
+        "average_economy_km_l",
+    ]
+    writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+
+    download_name = f"gnaoi_monthly_summary_{catalog.selected_vehicle.id}.csv"
+    return Response(
+        output.getvalue(),
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f"attachment; filename={download_name}"},
     )

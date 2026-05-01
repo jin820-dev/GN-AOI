@@ -208,14 +208,33 @@ def _build_monthly_summaries(records: list) -> list[dict[str, str]]:
                 "month": month,
                 "year": month[:4],
                 "total_fuel_l": f"{round(bucket['total_fuel_l'], 2):.2f} L",
+                "total_fuel_l_csv": f"{round(bucket['total_fuel_l'], 2):.2f}",
                 "total_price_yen": f"{round(bucket['total_price_yen']):.0f} 円",
+                "total_price_yen_csv": f"{round(bucket['total_price_yen']):.0f}",
                 "fuel_count": f"{bucket['fuel_count']} 回",
+                "fuel_count_csv": str(bucket["fuel_count"]),
                 "total_trip_km": f"{round(bucket['total_trip_km'], 1):.1f} km",
+                "total_trip_km_csv": f"{round(bucket['total_trip_km'], 1):.1f}",
                 "average_economy_km_l": "-" if average_economy is None else f"{round(average_economy, 2):.2f} km/L",
+                "average_economy_km_l_csv": "" if average_economy is None else f"{round(average_economy, 2):.2f}",
             }
         )
 
     return summaries
+
+
+def build_monthly_summary_csv_rows(records: list) -> list[dict[str, str]]:
+    return [
+        {
+            "month": summary["month"],
+            "total_price_yen": summary["total_price_yen_csv"],
+            "total_fuel_l": summary["total_fuel_l_csv"],
+            "fuel_count": summary["fuel_count_csv"],
+            "total_trip_km": summary["total_trip_km_csv"],
+            "average_economy_km_l": summary["average_economy_km_l_csv"],
+        }
+        for summary in _build_monthly_summaries(records)
+    ]
 
 
 def _build_monthly_summary_groups(monthly_summaries: list[dict[str, str]]) -> list[dict]:

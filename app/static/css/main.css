@@ -625,6 +625,9 @@ textarea {
 }
 
 .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 46px;
   min-height: 46px;
   padding: 0 14px;
@@ -633,6 +636,7 @@ textarea {
   background: var(--surface-strong);
   color: var(--text);
   font-weight: 700;
+  text-decoration: none;
 }
 
 .secondary-button--quiet {
