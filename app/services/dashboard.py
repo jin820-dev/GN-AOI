@@ -1,4 +1,5 @@
 from dataclasses import dataclass, asdict
+from datetime import date
 from pathlib import Path
 
 from app.services.csv_loader import CSV_HEADER, load_csv_records
@@ -23,6 +24,7 @@ class HomeViewModel:
     summary_mobile_primary: list[dict[str, str]]
     summary_mobile_details: list[dict[str, str]]
     fuel_economy_chart: dict[str, list]
+    last_record: dict[str, str] | None
     record_cards: list[dict]
     notices: list[str]
     errors: list[str]
@@ -129,6 +131,31 @@ def _build_fuel_economy_chart(records: list) -> dict[str, list]:
     }
 
 
+def _build_last_record(records: list) -> dict[str, str] | None:
+    if not records:
+        return None
+
+    record = records[0]
+    return {
+        "odd_km": record.odd_km,
+        "price_yen": record.price_yen,
+        "fuel_type": record.fuel_type,
+        "distance_mode": record.distance_mode,
+    }
+
+
+def _build_initial_form_state(last_record: dict[str, str] | None) -> CreateFormState:
+    values = {"date": date.today().isoformat()}
+    if last_record:
+        values.update(
+            {
+                "fuel_type": last_record["fuel_type"],
+                "distance_mode": last_record["distance_mode"],
+            }
+        )
+    return build_record_form_state(values=values)
+
+
 def build_home_view_model(
     app_name: str,
     data_dir: Path,
@@ -144,7 +171,6 @@ def build_home_view_model(
     notices = list(catalog.notices)
     errors = list(catalog.errors)
     records = []
-    resolved_form_state = form_state or build_record_form_state()
 
     if catalog.selected_vehicle is not None:
         csv_path = resolve_vehicle_csv_path(data_dir=data_dir, vehicle=catalog.selected_vehicle)
@@ -152,6 +178,9 @@ def build_home_view_model(
         notices.extend(csv_result.notices)
         errors.extend(csv_result.errors)
         records = list(reversed(csv_result.records))
+
+    last_record = _build_last_record(records)
+    resolved_form_state = form_state or _build_initial_form_state(last_record)
 
     summary_items = [
         {"label": metric.label, "value": metric.value}
@@ -178,6 +207,7 @@ def build_home_view_model(
         summary_mobile_primary=_pick_summary_items(summary_items, SUMMARY_MOBILE_PRIMARY_LABELS, split_value=True),
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
         fuel_economy_chart=_build_fuel_economy_chart(records),
+        last_record=last_record,
         record_cards=format_record_cards(records),
         notices=notices,
         errors=errors,

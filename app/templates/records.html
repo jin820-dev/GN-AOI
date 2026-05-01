@@ -7,6 +7,7 @@
     </div>
     <form class="record-form" method="post" action="{{ url_for('main.create_record_entry', vehicle=selected_vehicle_id) if selected_vehicle_id else url_for('main.create_record_entry') }}">
       <input type="hidden" name="vehicle" value="{{ selected_vehicle_id or '' }}">
+      <input type="hidden" name="distance_mode" value="{{ last_record.distance_mode if last_record else '' }}">
 
       <div class="form-grid">
         <label class="form-field">
@@ -41,7 +42,7 @@
 
         <label class="form-field">
           <span class="field-label">積算距離 (km)</span>
-          <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ '' if edit_state else form_values.odd_km }}" placeholder="例: 12540.0">
+          <input type="number" inputmode="decimal" step="0.1" min="0" name="odd_km" value="{{ '' if edit_state else form_values.odd_km }}" placeholder="未入力なら自動計算">
           {% if not edit_state and form_errors.odd_km %}<small class="field-error">{{ form_errors.odd_km }}</small>{% endif %}
         </label>
 
