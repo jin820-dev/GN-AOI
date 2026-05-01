@@ -111,6 +111,59 @@
     {% endif %}
   </section>
 
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <h3>月別給油集計</h3>
+        <p class="panel__subtext">給油日ベースの月別集計です</p>
+      </div>
+    </div>
+    {% if monthly_summary_groups %}
+      <div class="monthly-summary-years">
+        {% for group in monthly_summary_groups %}
+          <details class="monthly-summary-year" {% if loop.first %}open{% endif %}>
+            <summary>{{ group.year }}年</summary>
+            <div class="monthly-summary-list">
+              {% for month in group.months %}
+                <article class="monthly-summary-row">
+                  <div class="monthly-summary-row__month">{{ month.month }}</div>
+                  <dl class="monthly-summary-row__main">
+                    <div>
+                      <dt>給油金額</dt>
+                      <dd>{{ month.total_price_yen }}</dd>
+                    </div>
+                    <div>
+                      <dt>給油量</dt>
+                      <dd>{{ month.total_fuel_l }}</dd>
+                    </div>
+                    <div>
+                      <dt>給油回数</dt>
+                      <dd>{{ month.fuel_count }}</dd>
+                    </div>
+                  </dl>
+                  <dl class="monthly-summary-row__sub">
+                    <div>
+                      <dt>走行距離</dt>
+                      <dd>{{ month.total_trip_km }}</dd>
+                    </div>
+                    <div>
+                      <dt>平均燃費</dt>
+                      <dd>{{ month.average_economy_km_l }}</dd>
+                    </div>
+                  </dl>
+                </article>
+              {% endfor %}
+            </div>
+          </details>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>表示できる月別給油集計がありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
   {% if notices %}
     <section class="panel">
       <div class="panel__header">

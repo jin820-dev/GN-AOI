@@ -25,6 +25,8 @@ class HomeViewModel:
     summary_mobile_details: list[dict[str, str]]
     fuel_economy_chart: dict[str, list]
     fuel_price_chart: dict[str, list]
+    monthly_summaries: list[dict[str, str]]
+    monthly_summary_groups: list[dict]
     last_record: dict[str, str] | None
     record_cards: list[dict]
     notices: list[str]
@@ -148,6 +150,64 @@ def _build_fuel_price_chart(records: list) -> dict[str, list]:
     }
 
 
+def _build_monthly_summaries(records: list) -> list[dict[str, str]]:
+    monthly: dict[str, dict] = {}
+
+    for record in records:
+        if len(record.date) < 7:
+            continue
+
+        month = record.date[:7]
+        bucket = monthly.setdefault(
+            month,
+            {
+                "total_fuel_l": 0,
+                "total_price_yen": 0,
+                "total_trip_km": 0,
+                "fuel_count": 0,
+                "economy_values": [],
+            },
+        )
+
+        bucket["fuel_count"] += 1
+        if record.fuel_l_value is not None:
+            bucket["total_fuel_l"] += record.fuel_l_value
+        if record.price_yen_value is not None:
+            bucket["total_price_yen"] += record.price_yen_value
+        if record.trip_km_value is not None:
+            bucket["total_trip_km"] += record.trip_km_value
+        if record.economy_km_l is not None:
+            bucket["economy_values"].append(record.economy_km_l)
+
+    summaries = []
+    for month in sorted(monthly.keys(), reverse=True):
+        bucket = monthly[month]
+        economy_values = bucket["economy_values"]
+        average_economy = sum(economy_values) / len(economy_values) if economy_values else None
+        summaries.append(
+            {
+                "month": month,
+                "year": month[:4],
+                "total_fuel_l": f"{round(bucket['total_fuel_l'], 2):.2f} L",
+                "total_price_yen": f"{round(bucket['total_price_yen']):.0f} 円",
+                "fuel_count": f"{bucket['fuel_count']} 回",
+                "total_trip_km": f"{round(bucket['total_trip_km'], 1):.1f} km",
+                "average_economy_km_l": "-" if average_economy is None else f"{round(average_economy, 2):.2f} km/L",
+            }
+        )
+
+    return summaries
+
+
+def _build_monthly_summary_groups(monthly_summaries: list[dict[str, str]]) -> list[dict]:
+    groups: list[dict] = []
+    for summary in monthly_summaries:
+        if not groups or groups[-1]["year"] != summary["year"]:
+            groups.append({"year": summary["year"], "months": []})
+        groups[-1]["months"].append(summary)
+    return groups
+
+
 def _build_last_record(records: list) -> dict[str, str] | None:
     if not records:
         return None
@@ -224,6 +284,7 @@ def build_home_view_model(
             initial_odd_km=catalog.selected_vehicle.initial_odd_km if catalog.selected_vehicle else 0,
         )
     ]
+    monthly_summaries = _build_monthly_summaries(records)
 
     model = HomeViewModel(
         app_name=app_name,
@@ -243,6 +304,8 @@ def build_home_view_model(
         summary_mobile_details=_pick_summary_items(summary_items, SUMMARY_MOBILE_DETAIL_LABELS),
         fuel_economy_chart=_build_fuel_economy_chart(records),
         fuel_price_chart=_build_fuel_price_chart(records),
+        monthly_summaries=monthly_summaries,
+        monthly_summary_groups=_build_monthly_summary_groups(monthly_summaries),
         last_record=last_record,
         record_cards=_format_record_cards(records),
         notices=notices,
