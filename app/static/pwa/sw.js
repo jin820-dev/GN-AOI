@@ -6,7 +6,8 @@ const ASSETS = [
   "/static/js/theme.js",
   "/static/vendor/chart.umd.min.js",
   "/static/pwa/manifest.json",
-  "/static/pwa/icon.svg",
+  "/static/pwa/icon-192.png",
+  "/static/pwa/icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {
